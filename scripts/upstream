@@ -1,0 +1,106 @@
+#!/bin/sh
+# Keep the vendored skill current with its upstream. Driven by SOURCE.md.
+#
+#   scripts/upstream check    upstream commits since the pin, and the diff
+#   scripts/upstream pull     bring the files up to upstream HEAD, move the pin
+#
+# SOURCE.md header, one File: line per vendored file:
+#   Vendored from https://github.com/OWNER/REPO
+#   Upstream: DIR/UNDER/REPO
+#   File: NAME -> LOCAL/PATH
+#   Commit: FULLSHA (DATE)
+#   Merge: replace | three-way
+#   Pulled: DATE
+#
+# replace overwrites each file with upstream HEAD. three-way runs
+# git merge-file with the pinned upstream version as base, so only what
+# upstream changed after the pin comes in; conflict markers stay for a hand
+# resolution and the exit status is the conflict count.
+# Needs gh, logged in, and git.
+set -eu
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+source="$root/SOURCE.md"
+verb=${1:-}
+case "$verb" in check|pull) ;; *) echo "usage: scripts/upstream check|pull" >&2; exit 2 ;; esac
+
+repo=$(sed -n 's|^Vendored from https://github.com/||p' "$source")
+upstream=$(sed -n 's|^Upstream: ||p' "$source")
+pin=$(sed -n 's|^Commit: \([0-9a-f]*\).*|\1|p' "$source")
+mode=$(sed -n 's|^Merge: ||p' "$source")
+files=$(sed -n 's|^File: ||p' "$source")
+[ -n "$repo" ] && [ -n "$upstream" ] && [ -n "$pin" ] && [ -n "$mode" ] && [ -n "$files" ] || { echo "SOURCE.md is missing a header line" >&2; exit 2; }
+case "$mode" in replace|three-way) ;; *) echo "Merge: must be replace or three-way" >&2; exit 2 ;; esac
+
+short() { printf %.7s "$1"; }
+fetch() {   # fetch NAME REF, to stdout
+    gh api "repos/$repo/contents/$upstream/$1?ref=$2" --jq '.content' | base64 -d
+}
+
+# newest first: SHA DATE SUBJECT
+log=$(gh api "repos/$repo/commits?path=$upstream&sha=HEAD&per_page=100" \
+    --jq '.[] | .sha + " " + .commit.committer.date[0:10] + " " + (.commit.message | split("\n")[0])')
+head=$(printf '%s\n' "$log" | head -n 1 | cut -d' ' -f1)
+headdate=$(printf '%s\n' "$log" | head -n 1 | cut -d' ' -f2)
+# the pin may be short; a prefix match finds it, and the last line, the pin itself, is dropped
+newer=$(printf '%s\n' "$log" | sed "/^$pin/q" | sed '$d')
+printf '%s\n' "$log" | grep -q "^$pin" || { echo "pin $(short "$pin") is not among the last 100 commits to $upstream" >&2; exit 2; }
+
+IFS='
+'
+if [ "$verb" = check ]; then
+    if [ -z "$newer" ]; then
+        echo "at upstream HEAD $(short "$head") for $repo/$upstream"
+        exit 0
+    fi
+    echo "upstream commits since the pin $(short "$pin"):"
+    for line in $newer; do
+        printf '  %.7s %s\n' "$line" "${line#* }"
+    done
+    for line in $files; do
+        name=${line%% -> *}; local=${line##* -> }
+        tmp=$(mktemp); fetch "$name" "$head" > "$tmp"
+        diff -u --label "$local (local)" --label "$name ($(short "$head"))" "$root/$local" "$tmp" || true
+        rm -f "$tmp"
+    done
+    exit 1
+fi
+
+# pull
+if [ -z "$newer" ]; then
+    echo "already at HEAD $(short "$head"); nothing to pull"
+    exit 0
+fi
+conflicts=0
+for line in $files; do
+    name=${line%% -> *}; local=${line##* -> }
+    if [ "$mode" = replace ]; then
+        fetch "$name" "$head" > "$root/$local"
+        echo "replaced $local with $name at $(short "$head")"
+        continue
+    fi
+    base=$(mktemp); theirs=$(mktemp)
+    fetch "$name" "$pin" > "$base"
+    fetch "$name" "$head" > "$theirs"
+    set +e
+    git merge-file -L "$local" -L "$(short "$pin")" -L "$(short "$head")" "$root/$local" "$base" "$theirs"
+    n=$?
+    set -e
+    rm -f "$base" "$theirs"
+    if [ "$n" -lt 0 ]; then
+        echo "git merge-file failed on $local" >&2; exit 2
+    elif [ "$n" -gt 0 ]; then
+        echo "merged $local: $n conflict hunk(s) left as markers"
+        conflicts=$((conflicts + n))
+    else
+        echo "merged $local cleanly"
+    fi
+done
+today=$(date +%Y-%m-%d)
+sed "s|^Commit: .*|Commit: $head ($headdate)|; s|^Pulled: .*|Pulled: $today|" "$source" > "$source.tmp"
+mv "$source.tmp" "$source"
+echo "pin moved to $(short "$head") ($headdate) in SOURCE.md"
+echo "next: review the diff with git diff"
+[ "$conflicts" -eq 0 ] || echo "      resolve the conflict markers, then check that the kept parts in SOURCE.md survived"
+echo "      commit"
+exit "$conflicts"
