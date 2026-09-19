@@ -11,6 +11,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: hooks print the skill in the shape each event takes, under the output cap
+        run: |
+          hooks/inject.sh session | cmp - skills/unslop/SKILL.md
+          hooks/inject.sh subagent | python3 -c 'import json, sys; d = json.load(sys.stdin)["hookSpecificOutput"]; assert d["hookEventName"] == "SubagentStart" and d["additionalContext"] == open("skills/unslop/SKILL.md").read()'
+          test "$(hooks/inject.sh subagent | wc -c)" -lt 10000
       - name: install Claude Code (native installer, stable channel)
         run: |
           curl -fsSL https://claude.ai/install.sh | bash -s stable
