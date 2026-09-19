@@ -33,8 +33,12 @@ files=$(sed -n 's|^File: ||p' "$source")
 case "$mode" in replace|three-way) ;; *) echo "Merge: must be replace or three-way" >&2; exit 2 ;; esac
 
 short() { printf %.7s "$1"; }
-fetch() {   # fetch NAME REF, to stdout
-    gh api "repos/$repo/contents/$upstream/$1?ref=$2" --jq '.content' | base64 -d
+fetch() {   # fetch NAME REF OUT: the upstream file into OUT, which must come back non-empty
+    if ! gh api "repos/$repo/contents/$upstream/$1?ref=$2" --jq '.content' | base64 -d > "$3" || [ ! -s "$3" ]; then
+        echo "could not fetch $upstream/$1 at $(short "$2")" >&2
+        rm -f "$3"
+        exit 2
+    fi
 }
 
 # newest first: SHA DATE SUBJECT
@@ -59,7 +63,7 @@ if [ "$verb" = check ]; then
     done
     for line in $files; do
         name=${line%% -> *}; local=${line##* -> }
-        tmp=$(mktemp); fetch "$name" "$head" > "$tmp"
+        tmp=$(mktemp); fetch "$name" "$head" "$tmp"
         diff -u --label "$local (local)" --label "$name ($(short "$head"))" "$root/$local" "$tmp" || true
         rm -f "$tmp"
     done
@@ -75,19 +79,20 @@ conflicts=0
 for line in $files; do
     name=${line%% -> *}; local=${line##* -> }
     if [ "$mode" = replace ]; then
-        fetch "$name" "$head" > "$root/$local"
+        tmp=$(mktemp); fetch "$name" "$head" "$tmp"
+        mv "$tmp" "$root/$local"
         echo "replaced $local with $name at $(short "$head")"
         continue
     fi
     base=$(mktemp); theirs=$(mktemp)
-    fetch "$name" "$pin" > "$base"
-    fetch "$name" "$head" > "$theirs"
+    fetch "$name" "$pin" "$base"
+    fetch "$name" "$head" "$theirs"
     set +e
     git merge-file -L "$local" -L "$(short "$pin")" -L "$(short "$head")" "$root/$local" "$base" "$theirs"
     n=$?
     set -e
     rm -f "$base" "$theirs"
-    if [ "$n" -lt 0 ]; then
+    if [ "$n" -gt 127 ]; then   # merge-file reports an error as a negative status, which the shell shows as 255
         echo "git merge-file failed on $local" >&2; exit 2
     elif [ "$n" -gt 0 ]; then
         echo "merged $local: $n conflict hunk(s) left as markers"
