@@ -1,0 +1,9 @@
+{
+  "name": "unslop",
+  "description": "Cut AI tells from any writing. pstack lineage with the soul section and model invocation kept; puts itself in context at session and subagent start.",
+  "author": {
+    "name": "DaftDoki"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/daftdoki/dokidlc-skill-unslop"
+}
