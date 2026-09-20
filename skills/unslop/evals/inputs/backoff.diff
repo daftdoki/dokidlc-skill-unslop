@@ -1,0 +1,63 @@
+diff --git a/relay/client.py b/relay/client.py
+index 3f2a9c1..8b7d4e0 100644
+--- a/relay/client.py
++++ b/relay/client.py
+@@ -1,4 +1,6 @@
+ import logging
++import random
++import time
+ 
+ import httpx
+ 
+@@ -18,12 +20,31 @@ class RelayClient:
+     def __init__(self, base_url: str, token: str, timeout: float = 10.0):
+         self._http = httpx.Client(base_url=base_url, timeout=timeout)
+         self._token = token
++        self.max_retries = 3
++        self.backoff_base = 0.5
+ 
+-    def get(self, path: str) -> dict:
+-        r = self._http.get(path, headers={"Authorization": f"Bearer {self._token}"})
+-        r.raise_for_status()
+-        return r.json()
++    def get(self, path: str) -> dict:
++        return self._request("GET", path)
++
++    def _request(self, method: str, path: str) -> dict:
++        for attempt in range(self.max_retries + 1):
++            r = self._http.request(method, path, headers={"Authorization": f"Bearer {self._token}"})
++            if r.status_code != 429 or attempt == self.max_retries:
++                r.raise_for_status()
++                return r.json()
++            retry_after = r.headers.get("Retry-After")
++            delay = float(retry_after) if retry_after else self.backoff_base * (2 ** attempt) + random.uniform(0, 0.1)
++            log.warning("429 from %s %s, retry %d/%d in %.2fs", method, path, attempt + 1, self.max_retries, delay)
++            time.sleep(delay)
++        raise AssertionError("unreachable")
+diff --git a/tests/test_client.py b/tests/test_client.py
+index a1b2c3d..d4e5f6a 100644
+--- a/tests/test_client.py
++++ b/tests/test_client.py
+@@ -30,3 +30,24 @@ def test_get_raises_on_500(server):
+     with pytest.raises(httpx.HTTPStatusError):
+         client.get("/boom")
++
++
++def test_get_retries_on_429_then_succeeds(server, monkeypatch):
++    monkeypatch.setattr("relay.client.time.sleep", lambda s: None)
++    server.queue(429, headers={"Retry-After": "0"})
++    server.queue(429, headers={"Retry-After": "0"})
++    server.queue(200, json={"ok": True})
++    client = RelayClient(server.url, "t")
++    assert client.get("/x") == {"ok": True}
++    assert server.hits == 3
++
++
++def test_get_gives_up_after_max_retries(server, monkeypatch):
++    monkeypatch.setattr("relay.client.time.sleep", lambda s: None)
++    for _ in range(4):
++        server.queue(429)
++    client = RelayClient(server.url, "t")
++    with pytest.raises(httpx.HTTPStatusError):
++        client.get("/x")
++    assert server.hits == 4

@@ -1,0 +1,168 @@
+{
+  "skill_name": "unslop",
+  "evals": [
+    {
+      "id": 1,
+      "name": "rewrite-release-note",
+      "prompt": "Our marketing intern drafted release-note.md for Relay 2.4.1 and it reads like a bot wrote it. Rewrite it so a person on the team could have written it. Keep every number, name, date, link, and the customer quote exactly as they are. Write the result to output.md.",
+      "files": [
+        "release-note.md"
+      ],
+      "output": "output.md",
+      "expected_output": "A release note with the same facts, the customer quote verbatim, no em dashes, no curly quotes, sentence-case headings, no emoji, no AI vocabulary, and no chatbot closer. Length near the original, not a staccato summary.",
+      "facts": [
+        "2.4.1",
+        "12,400",
+        "38%",
+        "CVE-2026-31877",
+        "Priya Natarajan",
+        "2026-09-02",
+        "https://relay.example.com/releases/2.4.1",
+        "2026-09-14",
+        "Node 20",
+        "relay upgrade"
+      ],
+      "verbatim": [
+        "Relay is not just a tool — it’s the backbone of how our team collaborates, and 2.4 was a game-changer."
+      ],
+      "assertions": [
+        "No em dashes or spaced en dashes outside quoted text (rule 13)",
+        "No curly quotes outside quoted text (rule 19)",
+        "Headings are sentence case (rule 17)",
+        "No emoji (rule 18)",
+        "No AI vocabulary, puffery, or metaphor nouns (rules 1, 4, 7, 8, 26, 31)",
+        "No filler phrases or 'not just X but Y' (rules 9, 23)",
+        "No chatbot or sycophantic phrases (rules 20, 22)",
+        "No bullet or paragraph opens with a bold label and a colon (rule 16)",
+        "No knowing asides (rule 34, proxy: a phrase list from iteration 1)",
+        "Every fact survives",
+        "Quoted text survives as written (Guards)",
+        "Length between 55% and 130% of the input",
+        "Not over-corrected: under 15% fragments, no 'Not X.' closers (Guards)"
+      ],
+      "length": {
+        "min_ratio": 0.55,
+        "max_ratio": 1.3
+      }
+    },
+    {
+      "id": 2,
+      "name": "pr-description-from-diff",
+      "prompt": "Write the PR description for backoff.diff. The reviewer is a teammate who has not seen the branch. Save it as pr.md.",
+      "files": [
+        "backoff.diff"
+      ],
+      "output": "pr.md",
+      "expected_output": "A PR description that states what changed and why, names the retry count, the backoff base, the 429 status, Retry-After, and the two tests, with no bold-label bullets, no title-case headings, no em dashes, and no emoji.",
+      "facts": [
+        "429",
+        "Retry-After",
+        "re:(3|three) (retr|attempt|time)",
+        "re:0\\.5 ?s|0\\.5 second|half a second",
+        "_request",
+        "test_get_retries_on_429_then_succeeds",
+        "test_get_gives_up_after_max_retries"
+      ],
+      "verbatim": [],
+      "assertions": [
+        "No em dashes or spaced en dashes outside quoted text (rule 13)",
+        "No curly quotes outside quoted text (rule 19)",
+        "Headings are sentence case (rule 17)",
+        "No emoji (rule 18)",
+        "No AI vocabulary, puffery, or metaphor nouns (rules 1, 4, 7, 8, 26, 31)",
+        "No filler phrases or 'not just X but Y' (rules 9, 23)",
+        "No chatbot or sycophantic phrases (rules 20, 22)",
+        "No bullet or paragraph opens with a bold label and a colon (rule 16)",
+        "No knowing asides (rule 34, proxy: a phrase list from iteration 1)",
+        "Every fact survives",
+        "Not over-corrected: under 15% fragments, no 'Not X.' closers (Guards)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "slack-incident-message",
+      "prompt": "Write a Slack message from me to the #relay-eng channel about this morning's incident. Facts: the sync API returned 503 from 09:12 to 09:41 UTC on 2026-09-20; cause was the batched writer from 2.4.1 holding a table lock on `workspace_files` during a 2.1 TB import for workspace ws_8f3k; 41 workspaces saw failed syncs, none lost data; Marta rolled back the writer at 09:38 and the fix is in PR #1462, which caps a batch at 5000 rows. Keep it under 200 words. Save it as message.md.",
+      "files": [],
+      "output": "message.md",
+      "expected_output": "A message under 200 words with every fact, no chatbot phrases, no em dashes, no emoji, and no title-case headings. Reads like a person, not a status page.",
+      "facts": [
+        "503",
+        "09:12",
+        "09:41",
+        "2026-09-20",
+        "workspace_files",
+        "2.1 TB",
+        "ws_8f3k",
+        "41",
+        "Marta",
+        "09:38",
+        "#1462",
+        "5000"
+      ],
+      "verbatim": [],
+      "assertions": [
+        "No em dashes or spaced en dashes outside quoted text (rule 13)",
+        "No curly quotes outside quoted text (rule 19)",
+        "Headings are sentence case (rule 17)",
+        "No emoji (rule 18)",
+        "No AI vocabulary, puffery, or metaphor nouns (rules 1, 4, 7, 8, 26, 31)",
+        "No filler phrases or 'not just X but Y' (rules 9, 23)",
+        "No chatbot or sycophantic phrases (rules 20, 22)",
+        "No bullet or paragraph opens with a bold label and a colon (rule 16)",
+        "No knowing asides (rule 34, proxy: a phrase list from iteration 1)",
+        "Every fact survives",
+        "Under 200 words",
+        "Not over-corrected: under 15% fragments, no 'Not X.' closers (Guards)"
+      ],
+      "length": {
+        "max_words": 200
+      }
+    },
+    {
+      "id": 4,
+      "name": "tighten-plain-intro-keep-quote",
+      "prompt": "Tighten the intro in intro.md for the README. It is a little long. Keep the Copperfield quote exactly as it is, it is theirs not ours. Write the result to intro.md in place.",
+      "files": [
+        "intro.md"
+      ],
+      "output": "intro.md",
+      "expected_output": "A shorter intro that keeps every fact and the quoted block byte for byte, including its em dash and its slop, because quoted text outranks the rules. Prose outside the quote stays in whole sentences, not fragments.",
+      "facts": [
+        "30 versions",
+        "2024",
+        "Copperfield",
+        "40 TB",
+        "12s",
+        "400ms",
+        "300 machines",
+        "2.1 TB",
+        "brew install relay",
+        "relay init",
+        "https://relay.example.com/spec",
+        "relay-core"
+      ],
+      "verbatim": [
+        "We migrated 40 TB from Dropbox to Relay over one weekend — a seamless\n> transition that not only cut our sync latency from 12s to under 400ms,\n> but also fostered a vibrant new culture of trust in our tooling. It's\n> been a game-changer."
+      ],
+      "assertions": [
+        "No em dashes or spaced en dashes outside quoted text (rule 13)",
+        "No curly quotes outside quoted text (rule 19)",
+        "Headings are sentence case (rule 17)",
+        "No emoji (rule 18)",
+        "No AI vocabulary, puffery, or metaphor nouns (rules 1, 4, 7, 8, 26, 31)",
+        "No filler phrases or 'not just X but Y' (rules 9, 23)",
+        "No chatbot or sycophantic phrases (rules 20, 22)",
+        "No bullet or paragraph opens with a bold label and a colon (rule 16)",
+        "No knowing asides (rule 34, proxy: a phrase list from iteration 1)",
+        "Every fact survives",
+        "Quoted text survives as written (Guards)",
+        "Length between 50% and 95% of the input",
+        "Not over-corrected: under 15% fragments, no 'Not X.' closers (Guards)"
+      ],
+      "length": {
+        "min_ratio": 0.5,
+        "max_ratio": 0.95
+      }
+    }
+  ]
+}
