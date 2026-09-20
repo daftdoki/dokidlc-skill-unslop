@@ -16,18 +16,17 @@ Edit text to remove AI patterns and add human voice.
 
 ## Guards
 
-- Facts outrank every rule below: numbers, names, dates, URLs, quotes, units, code identifiers, scope words and negations survive a rewrite unchanged. Quoted text and the voice the user asked for come next. Only then the anti-slop rules.
+- Facts outrank every rule below: numbers, names, dates, URLs, quotes, units, code identifiers, scope words and negations survive a rewrite unchanged. Quoted text, the voice the user asked for, and the shape of the medium (a chat message has no headings) come next. Only then the anti-slop rules.
+- A rewrite adds nothing the source does not state: no claim, praise, consequence, or feeling. Where the source is thin, the text is short.
 - Do not overcorrect into anti-slop register. Staccato closers, "Not X. Y." fragments and forced bluntness are tells too. The mechanical rules (13, 17, 18, 19) apply on sight. For the rest, one instance may stand; repetition is the failure.
 
 ## Adding soul
 
-Removing patterns is half the job. Sterile, voiceless writing is just as obvious.
+Removing patterns is half the job. Sterile, voiceless writing is just as obvious. Voice comes from what you choose to say and how plainly you say it. A sentence added to sound human is the next tell (rule 34).
 
-- **Have opinions.** React to facts instead of neutrally listing pros and cons.
+- **Have opinions.** Take a position on a decision the text contains: "upgrade for the CVE alone." A verdict on how a fact feels ("the difference is easy to feel") is commentary, not an opinion.
 - **Vary rhythm.** Short sentences. Then longer ones that take their time. Mix it up.
-- **Acknowledge complexity.** "Impressive but also kind of unsettling" beats "impressive."
-- **Use "I" when it fits.** First person isn't unprofessional.
-- **Let some mess in.** Perfect structure looks machine-made.
+- **Use "I" when it fits.** First person isn't unprofessional. "Honestly" and "I'll be straight with you" are throat-clearing, not first person.
 - **Be specific.** Not "this is concerning" but "there's something unsettling about agents churning away at 3am."
 
 ## Patterns to detect and fix
@@ -62,7 +61,7 @@ Removing patterns is half the job. Sterile, voiceless writing is just as obvious
 
 ### Communication artifacts
 
-20. **Chatbot phrases.** "I hope this helps!", "Let me know if...", "Of course!", "Certainly!", "Found the smoking gun!" Remove.
+20. **Chatbot phrases.** "I hope this helps!", "Let me know if...", "Of course!", "Certainly!", "Found the smoking gun!" Remove. A request for a specific reply is not one: "Let me know if the date form ever appears" asks for something.
 21. **Cutoff disclaimers.** "While specific details are limited..." Find sources or remove.
 22. **Sycophantic tone.** "Great question! You're absolutely right!" Respond directly.
 
@@ -85,3 +84,4 @@ Removing patterns is half the job. Sterile, voiceless writing is just as obvious
 31. **Prefer the plain word.** "utilize" becomes "use", "leverage" becomes "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if". The fancier synonym is rarely clearer.
 32. **Mannered prose.** Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), rhetorical fragments for effect, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Say what you mean. Rule 26 covers the metaphor nouns.
 33. **Over-compression.** Dropped articles, verbless fragments, symbol-speak, and abbreviations that make the reader decode instead of read. "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad date, exits with code 2, and writes nothing." Write whole sentences with their articles and verbs, and spell out arrows and abbreviations.
+34. **Knowing asides.** A clause that comments on a fact instead of stating the next one: "and the writer made it easy", "the credit goes to", "we're not going to pretend it was easy", "the kind of thing that makes it worth it", "so it shows up in logs rather than silently stretching the call". The aside reads as a person reflecting; it is the model performing one. Delete it, or state the next fact.

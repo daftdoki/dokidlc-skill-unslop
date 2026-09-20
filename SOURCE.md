@@ -32,7 +32,7 @@ Kept from 99559f2, where e8d856f changed or removed them:
 - Process step 3, "Add soul", with the pointer reworded to "see 'Adding
   soul' below" (99559f2 said "see next section", and the Guards section
   now sits between).
-- The "Adding soul" section.
+- The "Adding soul" section, reworded on 2026-09-20 (see below).
 - Rules 1 (Puffery), 2 (Name-dropping), 4 (Promotional language), 6
   (Formulaic challenges), and 21 (Cutoff disclaimers).
 - Rule 13's longer wording, with the sentence on why parentheses are no
@@ -46,6 +46,19 @@ Added:
 
 Taken from e8d856f as upstream wrote them: rules 32 (Mannered prose) and
 33 (Over-compression).
+
+Changed on 2026-09-20 after a skill-creator run (four writing prompts,
+claude-opus-5, three runs per arm). The with-skill outputs carried ten
+reflective asides ("the credit goes to", "we're not going to pretend it
+was easy", "Honestly") against one in the baseline, and the creator flagged
+each as an AI tell. The "Adding soul" bullets mapped onto them one to one.
+- "Adding soul": "Acknowledge complexity" and "Let some mess in" removed;
+  "Have opinions" and "Use I" narrowed to a position on a decision the text
+  contains. An added sentence says voice comes from selection, not addition.
+- Guards: the medium's shape ranks with the asked-for voice; a rewrite adds
+  no claim, praise, consequence, or feeling the source does not state.
+- Rule 20 excludes a request for a specific reply.
+- Rule 34 (Knowing asides) added, ours.
 
 The research that chose these is in the wellactually repository under
 unslop-and-writing-for-agents-skills, 2026-09-12.
