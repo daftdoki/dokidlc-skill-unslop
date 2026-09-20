@@ -59,6 +59,10 @@ each as an AI tell. The "Adding soul" bullets mapped onto them one to one.
   no claim, praise, consequence, or feeling the source does not state.
 - Rule 20 excludes a request for a specific reply.
 - Rule 34 (Knowing asides) added, ours.
+After the change, the same 24 runs: 0 of 12 with-skill outputs carried an
+aside, the creator passed all of them, the pass rate held at 96% against
+89% for the baseline, and the with-skill run fell from 77k to 66k tokens.
+The prompts and grader are in skills/unslop/evals/.
 
 The research that chose these is in the wellactually repository under
 unslop-and-writing-for-agents-skills, 2026-09-12.
